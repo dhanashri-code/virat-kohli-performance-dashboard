@@ -1,0 +1,355 @@
+/*
+============================================================
+VIRAT KOHLI PERFORMANCE DASHBOARD
+DAX MEASURES
+============================================================
+
+Table used below: Data
+
+IMPORTANT:
+1. Replace [Data] with your actual table name if it is different.
+2. Columns expected from the source dataset:
+   Format, Year, Innings, Runs, Balls, Outs, Avg, SR, HS,
+   50, 100, 4s, 6s, Dot %
+3. Create these as MEASURES in Power BI:
+   Modeling -> New measure
+============================================================
+*/
+
+
+/* =========================================================
+   1. CORE CAREER / PERFORMANCE MEASURES
+   ========================================================= */
+
+Total Runs =
+SUM(Data[Runs])
+
+
+Total Innings =
+SUM(Data[Innings])
+
+
+Total Outs =
+SUM(Data[Outs])
+
+
+Total Balls =
+SUM(Data[Balls])
+
+
+Highest Score =
+MAX(Data[HS])
+
+
+Batting Average =
+DIVIDE(
+    [Total Runs],
+    [Total Outs],
+    0
+)
+
+
+Strike Rate =
+DIVIDE(
+    [Total Runs] * 100,
+    [Total Balls],
+    0
+)
+
+
+Runs per Innings =
+DIVIDE(
+    [Total Runs],
+    [Total Innings],
+    0
+)
+
+
+/* =========================================================
+   2. MILESTONE MEASURES
+   ========================================================= */
+
+Total 50s =
+SUM(Data[50])
+
+
+Total 100s =
+SUM(Data[100])
+
+
+Total Fours =
+SUM(Data[4s])
+
+
+Total Sixes =
+SUM(Data[6s])
+
+
+/*
+50-to-100 conversion rate.
+
+This treats 50s and 100s as separate milestone categories,
+which matches a dataset where the "50" column represents
+half-centuries and the "100" column represents centuries.
+*/
+
+50 to 100 Conversion Rate =
+DIVIDE(
+    [Total 100s],
+    [Total 50s] + [Total 100s],
+    0
+)
+
+
+/*
+Boundary % = runs scored through boundaries / total runs.
+
+Boundary runs = (Fours × 4) + (Sixes × 6)
+*/
+
+Boundary Runs =
+([Total Fours] * 4) + ([Total Sixes] * 6)
+
+
+Boundary % =
+DIVIDE(
+    [Boundary Runs],
+    [Total Runs],
+    0
+)
+
+
+/* =========================================================
+   3. DOT BALL MEASURE
+   ========================================================= */
+
+/*
+Weighted Dot Ball %.
+
+Do NOT use AVERAGE(Data[Dot %]) because years/formats
+can have different numbers of balls.
+
+This converts each row's Dot % back to estimated dot balls,
+weights by balls faced, then calculates the overall percentage.
+*/
+
+Estimated Dot Balls =
+SUMX(
+    Data,
+    Data[Balls] * Data[Dot %] / 100
+)
+
+
+Dot Ball % =
+DIVIDE(
+    [Estimated Dot Balls],
+    [Total Balls],
+    0
+)
+
+
+/* =========================================================
+   4. SELECTED YEAR / DRILL-THROUGH MEASURES
+   ========================================================= */
+
+Selected Year =
+SELECTEDVALUE(
+    Data[Year],
+    "All Years"
+)
+
+
+Details Title =
+"Virat Kohli — " &
+SELECTEDVALUE(
+    Data[Year],
+    "Career"
+) &
+" Performance"
+
+
+/* =========================================================
+   5. FORMAT / YEAR ANALYSIS
+   ========================================================= */
+
+/*
+These measures automatically respond to Format and Year
+filters/slicers because they use the current filter context.
+No separate ODI/Test/T20I measures are required.
+*/
+
+
+ODI Runs =
+CALCULATE(
+    [Total Runs],
+    Data[Format] = "ODI"
+)
+
+
+Test Runs =
+CALCULATE(
+    [Total Runs],
+    Data[Format] = "Test"
+)
+
+
+T20I Runs =
+CALCULATE(
+    [Total Runs],
+    Data[Format] = "T20I"
+)
+
+
+/* =========================================================
+   6. CAREER PHASE ANALYSIS
+   ========================================================= */
+
+/*
+Use this calculated column for the Career Phase chart.
+
+Create it using:
+Modeling -> New column
+
+Do NOT create this as a measure.
+*/
+
+Career Phase =
+SWITCH(
+    TRUE(),
+    Data[Year] >= 2008 && Data[Year] <= 2012, "2008-2012",
+    Data[Year] >= 2013 && Data[Year] <= 2016, "2013-2016",
+    Data[Year] >= 2017 && Data[Year] <= 2020, "2017-2020",
+    Data[Year] >= 2021 && Data[Year] <= 2026, "2021-2026",
+    "Other"
+)
+
+
+/*
+Sort order for Career Phase.
+
+Create this as another calculated column.
+*/
+
+Career Phase Sort =
+SWITCH(
+    Data[Career Phase],
+    "2008-2012", 1,
+    "2013-2016", 2,
+    "2017-2020", 3,
+    "2021-2026", 4,
+    99
+)
+
+
+/* =========================================================
+   7. OPTIONAL CAREER PHASE MEASURES
+   ========================================================= */
+
+Runs by Career Phase =
+[Total Runs]
+
+
+50s by Career Phase =
+[Total 50s]
+
+
+100s by Career Phase =
+[Total 100s]
+
+
+/* =========================================================
+   8. YEAR-LEVEL MEASURES
+   ========================================================= */
+
+/*
+These measures are useful in year-based charts.
+When Year is placed on the X-axis, Power BI evaluates
+the measure separately for each year.
+*/
+
+Yearly Runs =
+[Total Runs]
+
+
+Yearly Average =
+[Batting Average]
+
+
+Yearly Strike Rate =
+[Strike Rate]
+
+
+Yearly Highest Score =
+[Highest Score]
+
+
+Yearly 50s =
+[Total 50s]
+
+
+Yearly 100s =
+[Total 100s]
+
+
+Yearly Fours =
+[Total Fours]
+
+
+Yearly Sixes =
+[Total Sixes]
+
+
+Yearly Dot Ball % =
+[Dot Ball %]
+
+
+/* =========================================================
+   9. DATA QUALITY / VALIDATION MEASURES
+   ========================================================= */
+
+/*
+Useful for checking the report while building it.
+These do not need to appear on the final dashboard.
+*/
+
+Boundary Run Check =
+[Boundary Runs]
+
+
+Milestone Total =
+[Total 50s] + [Total 100s]
+
+
+Out Rate =
+DIVIDE(
+    [Total Outs],
+    [Total Innings],
+    0
+)
+
+
+/* =========================================================
+   10. RECOMMENDED FORMATTING
+   =========================================================
+
+Total Runs              -> #,##0
+Total Innings           -> #,##0
+Total Outs              -> #,##0
+Total Balls             -> #,##0
+Highest Score           -> #,##0
+Total 50s               -> #,##0
+Total 100s              -> #,##0
+Total Fours             -> #,##0
+Total Sixes             -> #,##0
+
+Batting Average          -> 0.00
+Strike Rate              -> 0.00
+Runs per Innings         -> 0.00
+
+Boundary %               -> 0.0%
+50 to 100 Conversion     -> 0.0%
+Dot Ball %               -> 0.0%
+Out Rate                 -> 0.0%
+
+============================================================
+*/
