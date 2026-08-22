@@ -48,7 +48,17 @@ format-wise performance and milestone breakdown.
 
 ## 📷 Dashboard Preview
 
-[Add screenshots here]
+### Overview
+![Overview](Screenshots/Overview.png)
+
+### Performance Analysis
+![Performance](Screenshots/performance.png)
+
+### Milestones
+![Milestones](Screenshots/milestones.png)
+
+### Year Details
+![Details](Screenshots/details.png)
 
 ## 🚀 Key Power BI Features
 
