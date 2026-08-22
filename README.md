@@ -49,7 +49,7 @@ format-wise performance and milestone breakdown.
 ## 📷 Dashboard Preview
 
 ### Overview
-![Overview](Screenshots/Overview.png)
+![Overview](Screenshots/overview.png)
 
 ### Performance Analysis
 ![Performance](Screenshots/performance.png)
